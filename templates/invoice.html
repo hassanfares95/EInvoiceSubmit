@@ -1,63 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Invoice</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            background-color: #d7d7d7;
             padding: 20px;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 30px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-            button:hover {
-                background-color: #218838;
-            }
 
         .message {
             text-align: center;
@@ -66,82 +32,100 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
-        <h1>Create Invoice</h1>
+        <h1 class="text-center mb-4">Create Invoice</h1>
         <form id="invoiceForm">
+
             <div class="form-group">
                 <label for="invoiceNumber">Invoice Number</label>
-                <input type="text" id="invoiceNumber" placeholder="Enter Invoice Number" required>
+                <input type="text" class="form-control" id="invoiceNumber" placeholder="Enter Invoice Number" required>
             </div>
+
             <div class="form-group">
                 <label for="date">Date</label>
-                <input type="date" id="date" required>
+                <input type="date" class="form-control" id="date" required>
             </div>
+
             <div class="form-group">
                 <label for="dueDate">Due Date</label>
-                <input type="date" id="dueDate" required>
+                <input type="date" class="form-control" id="dueDate" required>
             </div>
 
-            <h2>Bill From</h2>
+            <h2 class="mt-4">Bill From</h2>
             <div class="form-group">
                 <label for="fromName">Name</label>
-                <input type="text" id="fromName" placeholder="Your Company Name" required>
+                <input type="text" class="form-control" id="fromName" placeholder="Your Company Name" required>
             </div>
+
             <div class="form-group">
                 <label for="fromAddress">Address</label>
-                <input type="text" id="fromAddress" placeholder="Company Address" required>
+                <input type="text" class="form-control" id="fromAddress" placeholder="Company Address" required>
             </div>
+
             <div class="form-group">
                 <label for="fromCity">City, State, ZIP</label>
-                <input type="text" id="fromCity" placeholder="City, State, ZIP" required>
+                <input type="text" class="form-control" id="fromCity" placeholder="City, State, ZIP" required>
             </div>
+
             <div class="form-group">
                 <label for="fromPhone">Phone</label>
-                <input type="tel" id="fromPhone" placeholder="123-456-7890" required>
+                <input type="tel" class="form-control" id="fromPhone" placeholder="123-456-7890" required>
             </div>
+
             <div class="form-group">
                 <label for="fromEmail">Email</label>
-                <input type="email" id="fromEmail" placeholder="info@company.com" required>
+                <input type="email" class="form-control" id="fromEmail" placeholder="info@company.com" required>
             </div>
 
-            <h2>Bill To</h2>
+            <h2 class="mt-4">Bill To</h2>
             <div class="form-group">
                 <label for="toName">Name</label>
-                <input type="text" id="toName" placeholder="Customer Name" required>
+                <input type="text" class="form-control" id="toName" placeholder="Customer Name" required>
             </div>
+
             <div class="form-group">
                 <label for="toAddress">Address</label>
-                <input type="text" id="toAddress" placeholder="Customer Address" required>
+                <input type="text" class="form-control" id="toAddress" placeholder="Customer Address" required>
             </div>
+
             <div class="form-group">
                 <label for="toCity">City, State, ZIP</label>
-                <input type="text" id="toCity" placeholder="City, State, ZIP" required>
+                <input type="text" class="form-control" id="toCity" placeholder="City, State, ZIP" required>
             </div>
+
             <div class="form-group">
                 <label for="toPhone">Phone</label>
-                <input type="tel" id="toPhone" placeholder="987-654-3210" required>
+                <input type="tel" class="form-control" id="toPhone" placeholder="987-654-3210" required>
             </div>
+
             <div class="form-group">
                 <label for="toEmail">Email</label>
-                <input type="email" id="toEmail" placeholder="customer@example.com" required>
+                <input type="email" class="form-control" id="toEmail" placeholder="customer@example.com" required>
             </div>
 
-            <h2>Invoice Line</h2>
+            <h2 class="mt-4">Invoice Line</h2>
             <div class="form-group">
                 <label for="description">Description</label>
-                <input type="text" id="description" placeholder="Enter item description" required>
-            </div>
-            <div class="form-group">
-                <label for="amount">Amount (MYR)</label>
-                <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+                <input type="text" class="form-control" id="description" placeholder="Enter item description" required>
             </div>
 
-            <button type="button" onclick="createInvoice()">Save Invoice</button>
+            <div class="form-group">
+                <label for="amount">Amount (MYR)</label>
+                <input type="number" class="form-control" id="amount" placeholder="Enter amount" step="0.01" required>
+            </div>
+
+            <button type="button" class="btn btn-success btn-block" onclick="createInvoice()">Save Invoice</button>
             <div class="message" id="message"></div>
         </form>
     </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         function createInvoice() {
@@ -189,4 +173,5 @@
     </script>
 
 </body>
+
 </html>
