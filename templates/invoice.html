@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+            button:hover {
+                background-color: #218838;
+            }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Create Invoice</h1>
+        <form id="invoiceForm">
+            <div class="form-group">
+                <label for="invoiceNumber">Invoice Number</label>
+                <input type="text" id="invoiceNumber" placeholder="Enter Invoice Number" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="dueDate">Due Date</label>
+                <input type="date" id="dueDate" required>
+            </div>
+
+            <h2>Bill From</h2>
+            <div class="form-group">
+                <label for="fromName">Name</label>
+                <input type="text" id="fromName" placeholder="Your Company Name" required>
+            </div>
+            <div class="form-group">
+                <label for="fromAddress">Address</label>
+                <input type="text" id="fromAddress" placeholder="Company Address" required>
+            </div>
+            <div class="form-group">
+                <label for="fromCity">City, State, ZIP</label>
+                <input type="text" id="fromCity" placeholder="City, State, ZIP" required>
+            </div>
+            <div class="form-group">
+                <label for="fromPhone">Phone</label>
+                <input type="tel" id="fromPhone" placeholder="123-456-7890" required>
+            </div>
+            <div class="form-group">
+                <label for="fromEmail">Email</label>
+                <input type="email" id="fromEmail" placeholder="info@company.com" required>
+            </div>
+
+            <h2>Bill To</h2>
+            <div class="form-group">
+                <label for="toName">Name</label>
+                <input type="text" id="toName" placeholder="Customer Name" required>
+            </div>
+            <div class="form-group">
+                <label for="toAddress">Address</label>
+                <input type="text" id="toAddress" placeholder="Customer Address" required>
+            </div>
+            <div class="form-group">
+                <label for="toCity">City, State, ZIP</label>
+                <input type="text" id="toCity" placeholder="City, State, ZIP" required>
+            </div>
+            <div class="form-group">
+                <label for="toPhone">Phone</label>
+                <input type="tel" id="toPhone" placeholder="987-654-3210" required>
+            </div>
+            <div class="form-group">
+                <label for="toEmail">Email</label>
+                <input type="email" id="toEmail" placeholder="customer@example.com" required>
+            </div>
+
+            <h2>Invoice Line</h2>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" placeholder="Enter item description" required>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount (MYR)</label>
+                <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+            </div>
+
+            <button type="button" onclick="createInvoice()">Save Invoice</button>
+            <div class="message" id="message"></div>
+        </form>
+    </div>
+
+    <script>
+        function createInvoice() {
+            const data = {
+                invoiceNumber: document.getElementById("invoiceNumber").value,
+                date: document.getElementById("date").value,
+                dueDate: document.getElementById("dueDate").value,
+                fromName: document.getElementById("fromName").value,
+                fromAddress: document.getElementById("fromAddress").value,
+                fromCity: document.getElementById("fromCity").value,
+                fromPhone: document.getElementById("fromPhone").value,
+                fromEmail: document.getElementById("fromEmail").value,
+                toName: document.getElementById("toName").value,
+                toAddress: document.getElementById("toAddress").value,
+                toCity: document.getElementById("toCity").value,
+                toPhone: document.getElementById("toPhone").value,
+                toEmail: document.getElementById("toEmail").value,
+                description: document.getElementById("description").value,
+                amount: parseFloat(document.getElementById("amount").value),
+            };
+
+            fetch('/invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const message = document.getElementById("message");
+                    if (data.message === 'Invoice created successfully') {
+                        message.style.color = "green";
+                        message.textContent = "Invoice created and saved to Desktop as PDF and XML.";
+                    } else {
+                        message.style.color = "red";
+                        message.textContent = "Error creating invoice!";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    const message = document.getElementById("message");
+                    message.style.color = "red";
+                    message.textContent = "Error creating invoice!";
+                });
+        }
+    </script>
+
+</body>
+</html>
