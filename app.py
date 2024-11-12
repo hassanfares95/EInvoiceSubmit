@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
 from reportlab.lib.pagesizes import A4
@@ -16,6 +17,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///einvoices.db'
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db = SQLAlchemy(app)
+
+# Define the User model for registration and login
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
 
 # Define the Invoice model data
 class Invoice(db.Model):
@@ -63,7 +70,7 @@ def generate_ubl_invoice(invoice):
     xml_string = ET.tostring(root, encoding="utf-8", method="xml")
     return xml_string
 
-#saving to desktop
+# Saving to desktop
 def save_to_desktop(filename, content, binary_mode=True):
     desktop_path = pathlib.Path.home() / "Desktop"
     file_path = desktop_path / filename
@@ -114,7 +121,6 @@ def generate_pdf_invoice(invoice):
     c.drawString(1 * inch, y, invoice.description)
     c.drawString(5.5 * inch, y, f"MYR {invoice.amount:.2f}")
 
-
     c.setFont("Helvetica-Bold", 12)
     c.drawString(4.5 * inch, y - 0.5 * inch, "TOTAL")
     c.drawString(5.5 * inch, y - 0.5 * inch, f"MYR {invoice.amount:.2f}")
@@ -122,13 +128,62 @@ def generate_pdf_invoice(invoice):
     c.save()
     return filepath
 
-# endpoint HTML invoice creation page
+# User registration endpoint
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password, method='sha256')
+
+        # Check if user already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            return "User already exists"
+
+        new_user = User(username=username, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+# User login endpoint
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            return redirect(url_for('create_invoice_page'))
+        return "Invalid username or password"
+    return render_template('login.html')
+
+# User logout endpoint
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+# Decorator to ensure user is logged in
+def login_required(f):
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    decorated_function.__name__ = f.__name__
+    return decorated_function
+
+# Endpoint HTML invoice creation page (requires login)
 @app.route('/create-invoice')
+@login_required
 def create_invoice_page():
     return render_template('invoice.html')
 
-# Create the Invoice and Save XML and PDF with Invoice Number in the filename
 @app.route('/invoice', methods=['POST'])
+@login_required
 def create_invoice():
     data = request.get_json()
     
@@ -153,19 +208,72 @@ def create_invoice():
     db.session.add(new_invoice)
     db.session.commit()
 
-    # Generate UBL XML the save it
+    # Generate UBL XML and save it
     ubl_invoice_xml = generate_ubl_invoice(new_invoice)
-    xml_filename = f"invoice_{new_invoice.invoice_number}.xml"  # Use invoice number in filename
-    save_to_desktop(xml_filename, ubl_invoice_xml)
+    xml_filename = f"invoice_{new_invoice.invoice_number}.xml"
+    xml_path = save_to_desktop(xml_filename, ubl_invoice_xml)
 
-    # Generate PDF invoice then save it
-    pdf_filename = generate_pdf_invoice(new_invoice)
+    # Generate PDF invoice and save it
+    pdf_path = generate_pdf_invoice(new_invoice)
 
+    # Return a success message, converting paths to strings
     return jsonify({
         'message': 'Invoice created successfully',
-        'xml_invoice_path': str(pathlib.Path.home() / "Desktop" / xml_filename),
-        'pdf_invoice_path': str(pdf_filename)
+        'invoice_id': new_invoice.id,
+        'xml_filename': str(xml_path),  # Convert to string
+        'pdf_filename': str(pdf_path)   # Convert to string
     }), 201
+
+# Retrieve all invoices (GET method)
+@app.route('/invoices', methods=['GET'])
+@login_required
+def get_all_invoices():
+    invoices = Invoice.query.all()
+    invoice_list = []
+    for invoice in invoices:
+        invoice_list.append({
+            'id': invoice.id,
+            'invoice_number': invoice.invoice_number,
+            'date': invoice.date,
+            'due_date': invoice.due_date,
+            'from_name': invoice.from_name,
+            'from_address': invoice.from_address,
+            'from_city': invoice.from_city,
+            'from_phone': invoice.from_phone,
+            'from_email': invoice.from_email,
+            'to_name': invoice.to_name,
+            'to_address': invoice.to_address,
+            'to_city': invoice.to_city,
+            'to_phone': invoice.to_phone,
+            'to_email': invoice.to_email,
+            'description': invoice.description,
+            'amount': invoice.amount
+        })
+    return jsonify(invoice_list)
+
+# Retrieve a specific invoice by ID (GET method)
+@app.route('/invoice/<int:id>', methods=['GET'])
+@login_required
+def get_invoice(id):
+    invoice = Invoice.query.get_or_404(id)
+    return jsonify({
+        'id': invoice.id,
+        'invoice_number': invoice.invoice_number,
+        'date': invoice.date,
+        'due_date': invoice.due_date,
+        'from_name': invoice.from_name,
+        'from_address': invoice.from_address,
+        'from_city': invoice.from_city,
+        'from_phone': invoice.from_phone,
+        'from_email': invoice.from_email,
+        'to_name': invoice.to_name,
+        'to_address': invoice.to_address,
+        'to_city': invoice.to_city,
+        'to_phone': invoice.to_phone,
+        'to_email': invoice.to_email,
+        'description': invoice.description,
+        'amount': invoice.amount
+    })
 
 if __name__ == '__main__':
     db.create_all()

@@ -40,6 +40,9 @@
     <Content Include=".env" />
     <Content Include="requirements.txt" />
     <Content Include="templates\invoice.html" />
+    <Content Include="templates\login.html" />
+    <Content Include="templates\logout.html" />
+    <Content Include="templates\register.html" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="templates\" />
